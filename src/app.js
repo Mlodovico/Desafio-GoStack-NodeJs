@@ -16,34 +16,33 @@ app.get("/repositories", (request, response) => {
 
 app.post("/repositories", (request, response) => {
   const { title, url, techs } = request.body;
-  
-  var Likes = 0;
 
-  const repositorie = { id: uuid(), title, url, techs, Likes }
+  const repositorie = { id: uuid(), title, url, techs, likes: 0 }
 
-  try {
     repositories.push(repositorie);
     console.log('Success');
-  }catch(err) {
-    return response.json(err);
-  }
 
-  return response.json(repositorie);
+    return response.json(repositorie);
 });
 
 app.put("/repositories/:id", (request, response) => {
   const { id } = request.params;
+  const {title, url, techs} = request.body; 
 
   const repoditorieIndex = repositories.findIndex(repositorie => repositorie.id === id);
   if(repoditorieIndex < 0) {
     return response.status(400).json({error: 'This id does not match anyone'});
   } 
 
+  const {likes} = repositories[repoditorieIndex];
+
   const repositorie = {
+    id,
     title, 
     url, 
-    techs
-  } = request.body;
+    techs,
+    likes,
+  }
 
   repositories[repoditorieIndex] = repositorie;
   return response.json(repositorie)
@@ -58,7 +57,7 @@ app.delete("/repositories/:id", (request, response) => {
   } 
 
   repositories.splice(repositorieIndex, 1);
-  return response.status(200).json('Success delete');
+  return response.status(204).send();
 });
 
 app.post("/repositories/:id/like", (request, response) => {
@@ -70,9 +69,11 @@ app.post("/repositories/:id/like", (request, response) => {
     return response.status(400).json({error: 'This id does not match with anyone'});
   }
 
-  const repositorieLike = repositories.forEach(repositore => repositore.Likes ++);
+  const repository = repositories[idIndexRepository];
 
-  return response.json(repositorieLike);
+  repository.likes += 1;
+
+  return response.json({likes:repositories[idIndexRepository].likes});
 
 });
 
